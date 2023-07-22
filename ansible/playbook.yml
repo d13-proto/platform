@@ -1,0 +1,12 @@
+- name: Install zlib and create a file
+  hosts: some_remote_host
+  tasks:
+    - name: Install zlib
+      package:
+        name: zlib
+        state: present
+      become: yes
+    - name: Create the file /tmp/some_file
+      file:
+        path: '/tmp/some_file'
+        state: touch

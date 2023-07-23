@@ -4,10 +4,14 @@ variable "cloudflare_api_token" {
   sensitive = true
 }
 
-variable "cloudflare_zone_id" {
+variable "cloudflare_account_id" {
   type = string
 }
 
-variable "cloudflare_domain" {
+variable "cloudflare_zone" {
+  type = string
+}
+
+variable "ip" {
   type = string
 }

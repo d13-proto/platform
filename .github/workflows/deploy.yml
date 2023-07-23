@@ -3,13 +3,21 @@ name: 部署
 on:
   push:
     branches: ["feature-cd"]
-  workflow_dispatch:
 
 jobs:
   setup-dns:
     name: 用 Terraform 设置 DNS
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ vars.ENVIRONMENT_STAGE }}
+
+    env:
+      # TF_TOKEN_app_terraform_io: "${{ secrets.TF_API_TOKEN }}"
+      TF_CLOUD_ORGANIZATION: "${{ secrets.TF_CLOUD_ORGANIZATION }}"
+
+      TF_VAR_cloudflare_api_token: "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+      TF_VAR_cloudflare_account_id: "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
+      TF_VAR_cloudflare_zone: "${{ secrets.CLOUDFLARE_ZONE }}"
+      TF_VAR_ip: "${{ secrets.IP }}"
 
     defaults:
       run:
@@ -17,11 +25,21 @@ jobs:
         working-directory: terraform
 
     steps:
+      - name: Dump github context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Set TF_WORKSPACE
+        run: |
+          echo "TF_WORKSPACE=$(basename ${{ github.repository }})-${{ vars.ENVIRONMENT_STAGE }}" >> $GITHUB_OUTPUT
+          echo "$TF_WORKSPACE"
+
       - uses: actions/checkout@v3
 
       # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v2
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 

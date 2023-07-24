@@ -8,7 +8,7 @@ jobs:
   setup-dns:
     name: 用 Terraform 设置 DNS
     runs-on: ubuntu-latest
-    environment: ${{ vars.ENVIRONMENT_STAGE }}
+    environment: production
 
     env:
       TF_TOKEN_app_terraform_io: "${{ secrets.TF_API_TOKEN }}"
@@ -46,7 +46,7 @@ jobs:
     name: 用 Ansible 部署
     needs: setup-dns
     runs-on: ubuntu-latest
-    environment: ${{ vars.ENVIRONMENT_STAGE }}
+    environment: production
 
     defaults:
       run:

@@ -13,12 +13,12 @@ module "zone" {
 
   records = [
     {
-      name  = "test"
+      name  = "traefik"
       type  = "A"
       value = var.ip
     },
     {
-      name  = "test2"
+      name  = "siyuan"
       type  = "A"
       value = var.ip
     },

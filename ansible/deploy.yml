@@ -1,0 +1,22 @@
+- name: Deploy
+  hosts: all
+
+  tasks:
+    - name: Install Docker SDK for Python
+      ansible.builtin.pip:
+        name: docker
+
+    - name: Docker compose down
+      community.docker.docker_compose:
+        project_src: ~/src/platform/
+        state: absent
+
+    - name: Push source code
+      ansible.posix.synchronize:
+        src: ../
+        dest: ~/src/platform/
+
+    - name: Docker compose up
+      community.docker.docker_compose:
+        project_src: ~/src/platform/
+        state: present

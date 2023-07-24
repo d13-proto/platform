@@ -10,16 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
 
-    env:
-      TF_TOKEN_app_terraform_io: "${{ secrets.TF_API_TOKEN }}"
-      TF_CLOUD_ORGANIZATION: "${{ secrets.TF_CLOUD_ORGANIZATION }}"
-      TF_WORKSPACE: "${{ github.event.repository.name }}-${{ vars.ENVIRONMENT_STAGE }}"
-
-      TF_VAR_cloudflare_api_token: "${{ secrets.CLOUDFLARE_API_TOKEN }}"
-      TF_VAR_cloudflare_account_id: "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
-      TF_VAR_cloudflare_zone: "${{ secrets.CLOUDFLARE_ZONE }}"
-      TF_VAR_ip: "${{ secrets.IP }}"
-
     defaults:
       run:
         shell: bash
@@ -28,19 +18,22 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        # with:
-        #   cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+      - uses: hashicorp/setup-terraform@v2
 
-      - name: Terraform Init
-        run: terraform init
+      - run: terraform init
+        env:
+          TF_TOKEN_app_terraform_io: "${{ secrets.TF_API_TOKEN }}"
+          TF_CLOUD_ORGANIZATION: "${{ secrets.TF_CLOUD_ORGANIZATION }}"
+          TF_WORKSPACE: "${{ github.event.repository.name }}-${{ vars.ENVIRONMENT_STAGE }}"
 
-      - name: Terraform Plan
-        run: terraform plan -input=false
+      - run: terraform plan -input=false
+        env:
+          TF_VAR_cloudflare_api_token: "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          TF_VAR_cloudflare_account_id: "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
+          TF_VAR_cloudflare_zone: "${{ secrets.CLOUDFLARE_ZONE }}"
+          TF_VAR_ip: "${{ secrets.IP }}"
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false
+      - run: terraform apply -auto-approve -input=false
 
   deploy:
     name: 用 Ansible 部署
@@ -51,15 +44,18 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ansible
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set .env
+        run: echo "${{ secrets._ENV }}" > .env
+
       - name: Run playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
-          playbook: deploy.yml
-          directory: ./
-          key: ${{secrets.SSH_PRIVATE_KEY}}
+          playbook: ansible/deploy.yml
+          inventory: ${{ secrets.IP }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           options: |
-            --verbose
+            -v

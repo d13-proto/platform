@@ -1,22 +1,26 @@
 - name: Deploy
   hosts: all
 
-  tasks:
-    - name: Install Docker SDK for Python
-      ansible.builtin.pip:
-        name: docker
+  vars:
+    path: ~/platform/
 
+  tasks:
     - name: Docker compose down
       community.docker.docker_compose:
-        project_src: ~/src/platform/
+        project_src: "{{ path }}"
         state: absent
+      ignore_errors: true
+      register: docker_compose_down
 
     - name: Push source code
       ansible.posix.synchronize:
-        src: ../
-        dest: ~/src/platform/
+        src: ../../
+        dest: "{{ path }}"
+        rsync_opts:
+          - --exclude=.git
+          - --exclude=/data/*
 
     - name: Docker compose up
       community.docker.docker_compose:
-        project_src: ~/src/platform/
+        project_src: "{{ path }}"
         state: present

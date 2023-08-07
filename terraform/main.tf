@@ -18,7 +18,7 @@ module "zone" {
       value = var.ip
     },
     {
-      name  = "siyuan"
+      name  = "sy"
       type  = "A"
       value = var.ip
     },

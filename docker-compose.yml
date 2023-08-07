@@ -35,7 +35,7 @@ services:
       - TZ=${TIME_ZONE}
     labels:
       - traefik.enable=${TRAEFIK_DASHBOARD}
-      - domain=${TRAEFIK_DASHBOARD_SUBDOMAIN}.${DOMAIN}
+      - domain=traefik.${DOMAIN}
       - traefik.http.routers.api.service=api@internal
       - traefik.http.routers.api.middlewares=dashboardAuth
       - traefik.http.middlewares.dashboardAuth.basicauth.users=${TRAEFIK_DASHBOARD_USERS}
@@ -52,5 +52,5 @@ services:
       - --lang=zh_CN
     labels:
       - traefik.enable=true
-      - domain=${SIYUAN_SHARE_SUBDOMAIN}.${DOMAIN}
+      - domain=sy.${DOMAIN}
     restart: always

@@ -2,18 +2,27 @@ name: 部署
 
 on:
   push:
-    branches: ["feature-cd"]
+    branches: ["main"]
 
 jobs:
   setup-dns:
     name: 用 Terraform 设置 DNS
     runs-on: ubuntu-latest
-    environment: production
-
     defaults:
       run:
         shell: bash
         working-directory: terraform
+
+    environment: production
+    env:
+      TF_TOKEN_app_terraform_io: "${{ secrets.TF_API_TOKEN }}"
+      TF_CLOUD_ORGANIZATION: "${{ secrets.TF_CLOUD_ORGANIZATION }}"
+      TF_WORKSPACE: "${{ github.event.repository.name }}-${{ vars.ENVIRONMENT_STAGE }}"
+
+      TF_VAR_cloudflare_api_token: "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+      TF_VAR_cloudflare_account_id: "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
+      TF_VAR_cloudflare_zone: "${{ secrets.CLOUDFLARE_ZONE }}"
+      TF_VAR_ip: "${{ secrets.IP }}"
 
     steps:
       - uses: actions/checkout@v3
@@ -21,17 +30,8 @@ jobs:
       - uses: hashicorp/setup-terraform@v2
 
       - run: terraform init
-        env:
-          TF_TOKEN_app_terraform_io: "${{ secrets.TF_API_TOKEN }}"
-          TF_CLOUD_ORGANIZATION: "${{ secrets.TF_CLOUD_ORGANIZATION }}"
-          TF_WORKSPACE: "${{ github.event.repository.name }}-${{ vars.ENVIRONMENT_STAGE }}"
 
       - run: terraform plan -input=false
-        env:
-          TF_VAR_cloudflare_api_token: "${{ secrets.CLOUDFLARE_API_TOKEN }}"
-          TF_VAR_cloudflare_account_id: "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
-          TF_VAR_cloudflare_zone: "${{ secrets.CLOUDFLARE_ZONE }}"
-          TF_VAR_ip: "${{ secrets.IP }}"
 
       - run: terraform apply -auto-approve -input=false
 
@@ -39,23 +39,24 @@ jobs:
     name: 用 Ansible 部署
     needs: setup-dns
     runs-on: ubuntu-latest
-    environment: production
-
     defaults:
       run:
         shell: bash
 
+    environment: production
+
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set .env
+      - name: 写入 .env
         run: echo "${{ secrets._ENV }}" > .env
 
-      - name: Run playbook
+      - name: 运行 playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
-          playbook: ansible/deploy.yml
-          inventory: ${{ secrets.IP }}
+          directory: ansible
+          playbook: deploy.yml
+          inventory: ${{ secrets.INVENTORY }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           options: |
             -v

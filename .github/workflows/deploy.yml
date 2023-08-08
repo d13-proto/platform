@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   setup-dns:
@@ -53,7 +54,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: 写入 .env
-        run: echo "${{ secrets._ENV }}" > .env
+        run: echo '${{ secrets._ENV }}' > .env
 
       - name: 运行 playbook
         uses: dawidd6/action-ansible-playbook@v2

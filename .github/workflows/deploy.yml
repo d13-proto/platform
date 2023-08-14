@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch:
+  # workflow_dispatch:
 
 jobs:
   setup-dns:
@@ -15,7 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: bash
         working-directory: terraform
 
     environment: production
@@ -44,9 +43,6 @@ jobs:
     name: 用 Ansible 部署
     needs: setup-dns
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
 
     environment: production
 

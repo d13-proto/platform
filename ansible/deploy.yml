@@ -18,7 +18,6 @@
         dest: "{{ path }}"
         rsync_opts:
           - --exclude=.git
-          - --exclude=/data/*
 
     - name: Docker compose up
       community.docker.docker_compose:

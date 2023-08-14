@@ -43,14 +43,14 @@ services:
 
   siyuan-share:
     image: b3log/siyuan:latest
-    ports:
-      - "6807:6807"
     volumes:
       - ./data/siyuan-share:/data
     command:
       - --workspace=/data/
+      - --accessAuthCode=${SIYUAN_SHARE_PASS}
       - --lang=zh_CN
     labels:
       - traefik.enable=true
       - domain=sy.${DOMAIN}
+      - traefik.http.services.siyuan.loadbalancer.server.port=6806
     restart: always

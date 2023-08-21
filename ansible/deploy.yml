@@ -1,8 +1,9 @@
 - name: Deploy
+
   hosts: all
 
   vars:
-    path: ~/platform/
+    path: platform
 
   tasks:
     - name: Docker compose down

@@ -43,9 +43,11 @@ services:
 
   siyuan-share:
     image: b3log/siyuan:latest
+    user: "root:root"
     volumes:
       - ./data/siyuan-share:/data
     command:
+      - --port=6806
       - --workspace=/data/
       - --accessAuthCode=${SIYUAN_SHARE_PASS}
       - --lang=zh_CN

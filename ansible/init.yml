@@ -4,21 +4,24 @@
 
   become: true
 
+  vars:
+    deployer: deployer
+
   tasks:
 
     - name: Setup Docker
 
       block:
 
-        - name: Add Docker GPG apt Key
-          ansible.builtin.apt_key:
-            url: https://download.docker.com/linux/ubuntu/gpg
-            state: present
-
         - name: Get ubuntu VERSION_CODENAME
           ansible.builtin.command: lsb_release -sc
           register: ubuntu_version_codename
           changed_when: false
+
+        - name: Add Docker GPG apt Key
+          ansible.builtin.apt_key:
+            url: https://download.docker.com/linux/ubuntu/gpg
+            state: present
 
         - name: Add Docker Repository
           ansible.builtin.apt_repository:
@@ -33,24 +36,24 @@
               - containerd.io
               - docker-buildx-plugin
               - docker-compose-plugin
-            state: present
             update_cache: true
+            state: present
 
-    # - name: 安装 pip
-    #   ansible.builtin.package:
-    #     name: python3-pip
-    #     state: present
+    - name: 安装 pip
+      ansible.builtin.package:
+        name: python3-pip
+        state: present
 
-    # - name: 安装 Python 库依赖项 docker docker-compose
-    #   ansible.builtin.pip:
-    #     name:
-    #       # - docker
-    #       - docker-compose
-    #     state: present
+    - name: 安装 Python 库依赖项
+      ansible.builtin.pip:
+        name:
+          - docker-compose
+        state: present
 
     - name: Allow deployer to use Docker
       ansible.builtin.user:
-        name: deployer
+        name: "{{ deployer }}"
         groups:
           - docker
         append: true
+        state: present

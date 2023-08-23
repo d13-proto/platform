@@ -20,7 +20,7 @@ jobs:
     env:
       TF_TOKEN_app_terraform_io: "${{ secrets.TF_API_TOKEN }}"
       TF_CLOUD_ORGANIZATION: "${{ secrets.TF_CLOUD_ORGANIZATION }}"
-      TF_WORKSPACE: "${{ github.event.repository.name }}-${{ vars.ENVIRONMENT_STAGE }}"
+      TF_WORKSPACE: "${{ github.event.repository.name }}-production"
 
       TF_VAR_cloudflare_api_token: "${{ secrets.CLOUDFLARE_API_TOKEN }}"
       TF_VAR_cloudflare_account_id: "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
@@ -58,5 +58,3 @@ jobs:
           playbook: deploy.yml
           inventory: ${{ secrets.INVENTORY }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          options: |
-            -v

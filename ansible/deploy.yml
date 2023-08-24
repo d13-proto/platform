@@ -1,0 +1,33 @@
+- name: Deploy
+
+  hosts: all
+
+  vars:
+    path: platform
+
+  tasks:
+
+    - name: Docker compose down
+      community.docker.docker_compose:
+        project_src: "{{ path }}"
+        state: absent
+      ignore_errors: true
+      register: docker_compose_down
+
+    - name: Push source code
+      ansible.posix.synchronize:
+        src: ../../
+        dest: "{{ path }}"
+        rsync_opts:
+          - --exclude=.git
+
+    - name: Fix b3log/siyuan user problem
+      ansible.builtin.file:
+        path: "{{ path }}/data/siyuan-share"
+        state: directory
+        mode: 'u=rwX,g=rX,o=rwX'
+
+    - name: Docker compose up
+      community.docker.docker_compose:
+        project_src: "{{ path }}"
+        state: present

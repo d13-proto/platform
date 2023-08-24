@@ -1,0 +1,57 @@
+services:
+  traefik:
+    image: traefik:v3.0
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/traefik:/data
+    command:
+      - --providers.docker.exposedByDefault=false
+      - --providers.docker.defaultRule=Host(`{{ index .Labels "domain"}}`)
+
+      - --entryPoints.web.address=:80
+      # - --entryPoints.web.http.redirections.entryPoint.to=websecure
+      # - --entryPoints.websecure.address=:443
+      # - --entryPoints.websecure.http3=true
+      # - --entryPoints.websecure.http.tls.certResolver=letsencrypt
+      # - --certificatesResolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory
+      # - --certificatesResolvers.letsencrypt.acme.email=${ACME_EMAIL}
+      # - --certificatesResolvers.letsencrypt.acme.storage=/data/acme-letsencrypt.json
+      # - --certificatesResolvers.letsencrypt.acme.tlsChallenge=true
+
+      - --api=true
+      - --ping=true
+      - --log.filePath=/data/traefik.log
+      - --log.level=DEBUG
+      - --accessLog.filePath=/data/traefik-access.log
+      - --accessLog.bufferingSize=100
+      - --accesslog.filters.statuscodes=200,300-302
+      - --accesslog.filters.retryattempts=true
+      - --accesslog.filters.minduration=100ms
+      - --global.checknewversion=false
+    environment:
+      - TZ=${TIME_ZONE}
+    labels:
+      - traefik.enable=${TRAEFIK_DASHBOARD}
+      - domain=traefik.${DOMAIN}
+      - traefik.http.routers.api.service=api@internal
+      - traefik.http.routers.api.middlewares=dashboardAuth
+      - traefik.http.middlewares.dashboardAuth.basicauth.users=${TRAEFIK_DASHBOARD_USERS}
+    restart: always
+
+  siyuan-share:
+    image: b3log/siyuan:latest
+    volumes:
+      - ./data/siyuan-share:/data/共享
+    command:
+      - --port=6806
+      - --workspace=/data/共享
+      - --accessAuthCode=${SIYUAN_SHARE_PASS}
+      - --lang=zh_CN
+    labels:
+      - traefik.enable=true
+      - domain=sy.${DOMAIN}
+      - traefik.http.services.siyuan.loadbalancer.server.port=6806
+    restart: always
